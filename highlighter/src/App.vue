@@ -1,6 +1,5 @@
 <script setup>
-import { ref } from 'vue'
-import ColorInputWithoutInstance from "tinycolor2"
+import { watch, ref } from 'vue'
 import TextField from './components/TextField.vue'
 
 
@@ -19,11 +18,20 @@ const pickerModeArray = [sexTag, ageTag, symptomTag, diseaseTag, backgroundTag, 
 const gradientColor = ref("linear-gradient(0deg, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 100%)")
 
 const mainKey = ref(0)
-const pickerMode = ref(0)
+const pickerMode = ref(-1)
 
 const textField = ref(null)
 
 var isXslxLoaded = false
+
+watch(
+  sexTag,
+  (cur, prev) => {
+    console.log(cur + ", " + prev)
+    textField.value.currentColor = cur
+    textField.value.changeColor(cur, 0)
+  }
+)
 
 function importText(e) {
   var file = e.target.files[0]
@@ -47,6 +55,13 @@ function exportAll() {
 function changeMode(mode)  {
   pickerMode.value = mode
   textField.value.currentColor = pickerModeArray[mode].value
+  for (var i = 0; i < pickerModeArray.length; i++) {
+    const target = document.getElementById("picker-" + i)
+    
+    if (i == mode) target.setAttribute("class", "picker selected")
+    else target.setAttribute("class", "picker")
+  }
+  
   textField.value.changeMode(mode)
 }
 
@@ -59,25 +74,25 @@ function changeMode(mode)  {
     </div>
   </header>
   <div class="modeSelector" v-show="isXslxLoaded">
-    <div class="picker" @click="changeMode(0)"> 성별
+    <div class="picker" id="picker-0" @click="changeMode(0)"> 성별
       <color-picker v-model:pureColor="sexTag" v-model:gradientColor="gradientColor"/>
     </div>
-    <div class="picker" @click="changeMode(1)"> 나이
+    <div class="picker" id="picker-1" @click="changeMode(1)"> 나이
       <color-picker v-model:pureColor="ageTag" v-model:gradientColor="gradientColor"/>
     </div>
-    <div class="picker" @click="changeMode(2)"> 증상
+    <div class="picker" id="picker-2" @click="changeMode(2)"> 증상
       <color-picker v-model:pureColor="symptomTag" v-model:gradientColor="gradientColor"/>
     </div>
-    <div class="picker" @click="changeMode(3)"> 질병
+    <div class="picker" id="picker-3" @click="changeMode(3)"> 질병
       <color-picker v-model:pureColor="diseaseTag" v-model:gradientColor="gradientColor"/>
     </div>
-    <div class="picker" @click="changeMode(4)"> 기저질환
+    <div class="picker" id="picker-4" @click="changeMode(4)"> 기저질환
       <color-picker v-model:pureColor="backgroundTag" v-model:gradientColor="gradientColor"/>
     </div>
-    <div class="picker" @click="changeMode(5)"> 가족력
+    <div class="picker" id="picker-5" @click="changeMode(5)"> 가족력
       <color-picker v-model:pureColor="familyHistoryTag" v-model:gradientColor="gradientColor"/>
     </div>
-    <div class="picker" @click="changeMode(6)"> 외부 자료
+    <div class="picker" id="picker-6" @click="changeMode(6)"> 외부 자료
       <color-picker v-model:pureColor="externalSourceTag" v-model:gradientColor="gradientColor"/>
     </div>
   </div>
@@ -139,6 +154,10 @@ header {
   font-size: medium;
   font-weight: 800;
   font-family: "Gill Sans", sans-serif;
+}
+
+.picker.selected {
+  background-color: rgb(145, 155, 163);
 }
 
 </style>
