@@ -6,85 +6,88 @@ const textKey = ref(0)
 const currentColor = ref("")
 const pickerMode = ref(-1)
 
-function getSelection(event) {
+function getSelection() {
     const selection = document.getSelection()
+    const range = selection.getRangeAt(0)
     if (!selection.isCollapsed && pickerMode.value != -1) {
-        insertSpan(selection)
+        insertSpan(range)
     }
 }
 
-function insertSpan(selection) {
+function insertSpan(range, mode=null, color=null) {
     const span = document.createElement("SPAN")
-    span.textContent = selection.toString()
+    span.textContent = range.toString()
     
-    var mode = pickerMode.value
-    var color = currentColor.value
+    if (mode == null) mode = pickerMode.value
+    if (color == null) color = currentColor.value
 
-    span.setAttribute("class", "highlighted-" + pickerMode.value)
-    span.setAttribute("style", "background-color: " + currentColor.value)
+    span.setAttribute("class", "highlighted-" + mode)
+    span.setAttribute("style", "background-color: " + color)
 
-    const range = selection.getRangeAt(0)
     range.deleteContents()
 
     range.insertNode(span)
 
     span.addEventListener("click", (event) => {
         const innerSelection = document.getSelection()
+        
         if (innerSelection.isCollapsed) {
-            removeHighlight(event, innerSelection)
+            removeHighlight(event, range)
         } 
         else {
-            divideHighlight(event, selection, innerSelection)
+            const innerRange = innerSelection.getRangeAt(0)
+            divideHighlight(range, innerRange, mode, color)
         }   
     })
+    span.addEventListener("mouseup", (event) => {
+        getSelection(event)
+    })
 }
 
 
-function removeHighlight(event, selection) {
+function removeHighlight(event, range) {
     const innerContent = event.target.innerHTML
+    console.log(range.toString())
+
+    while (innerContent != range.toString()) {
+        range.setStart(range.startContainer, range.startOffset + 1)
+    }
+        
     event.target.remove()
-    
-    const startPoint = selection.getRangeAt(0)
-    startPoint.insertNode( document.createTextNode(innerContent) )
+
+    range.insertNode( document.createTextNode(innerContent) )
 }
 
-function divideHighlight(event, selection, innerSelection) {
-    const inner = event.target.innerHTML 
+function divideHighlight(range, innerRange, mode, color) {
     
-    console.log(event.target)
-    const child = event.target.childNodes
-            
-    const pspan = document.createElement("SPAN")
-    const bspan = document.createElement("SPAN")
-    pspan.textContent = child[0].textContent
-    bspan.textContent = child[2].textContent
-            
-    range.deleteContents()
+    console.log(range)
+    console.log(innerRange)
 
-    pspan.setAttribute("class", "highlighted-" + mode)
-    pspan.setAttribute("style", "background-color: " + color)
-    bspan.setAttribute("class", "highlighted-" + mode)
-    bspan.setAttribute("style", "background-color: " + color)
-            
-    range.insertNode(bspan)
-            
-    var brange = new Range()
-    brange.setStart(bspan, 0)
+    var prevRange = innerRange.cloneRange()
+    var midRange = innerRange.cloneRange()
+    var nextRange = innerRange.cloneRange()
 
-    var prange = new Range()
-    prange.setStart(pspan, 0)
+    nextRange.setStart(innerRange.startContainer, innerRange.endOffset)
+    nextRange.setEnd(range.endContainer, range.endOffset)
 
-    bspan.addEventListener("click", (event) => {
-        
-        removeHighlight(event, brange, mode, color)    
-    })
-    range.insertNode(child[1])
-            
-    range.insertNode(pspan)
-    pspan.addEventListener("click", (event) => {
-        
-        removeHighlight(event, prange, mode, color)    
-    })
+    insertSpan(nextRange, mode, color)
+
+    midRange.setStart(innerRange.startContainer, innerRange.startOffset)
+    midRange.setEnd(range.endContainer, range.endOffset)
+
+    insertSpan(midRange)
+
+    prevRange.setStart(range.startContainer, range.startOffset)
+    prevRange.setEnd(range.endContainer, range.endOffset)
+    
+    insertSpan(prevRange, mode, color)
+
+    nextRange.setStart(nextRange.startContainer, nextRange.startOffset + 2)
+    midRange.setStart(midRange.startContainer, midRange.startOffset + 1)
+
+    console.log(prevRange.toString())
+    console.log(midRange.toString())
+    console.log(nextRange.toString())
 }
 
 function exportHighlighted() {
