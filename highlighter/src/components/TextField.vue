@@ -3,25 +3,35 @@ import { ref } from 'vue'
 
 const importedText = ref("")
 const textKey = ref(0)
+const currentColor = ref("")
 
-function getSelection() {
-    console.log("eee")
+function getSelection(event) {
+    console.log(event.target)
     const selection = document.getSelection()
     const selectedText = selection.toString()
-    console.log(selectedText)
 
+    console.log(selection.anchorOffset)
     insertSpan(selection, selectedText)
 }
 
 function insertSpan(selection, selectedText) {
     const span = document.createElement("SPAN")
-    console.log(span)
     span.textContent = selectedText
-    span.setAttribute("class", "yellow-highlight")
-    span.setAttribute("style", "background-color: yellow")
+    span.setAttribute("class", "highlighted")
+    span.setAttribute("style", "background-color: " + currentColor.value)
     const range = selection.getRangeAt(0)
     range.deleteContents()
     range.insertNode(span);
+    span.addEventListener("click", removeHighlight)
+}
+
+function removeHighlight(event) {
+    const inner = event.target.innerHTML
+    console.log(inner)
+    event.target.remove()
+    const selection = document.getSelection()
+    const range = selection.getRangeAt(0)
+    range.insertNode( document.createTextNode(inner) )
 }
 
 function exportHighlighted() {
@@ -38,26 +48,28 @@ function exportHighlighted() {
     console.log(whole)
 }
 
+function changeMode(mode) {
+
+}
+
 defineExpose({
     importedText,
     textKey,
-    exportHighlighted
+    currentColor,
+    exportHighlighted,
+    changeMode
 })
 
 </script>
 
 <template>
     <div id = "text" :key="textKey">
-        <span id="whole" @mouseup="getSelection()">{{ importedText }}</span>
+        <span id="whole" @mouseup="getSelection($event)">{{ importedText }}</span>
     </div>
 </template>
 
 <style scoped>
 #text {
     height: 100%;
-}
-
-.yellow-highlight {
-    background-color: yellow;
 }
 </style>
