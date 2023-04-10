@@ -11,7 +11,10 @@ function getSelection(event) {
     const selectedText = selection.toString()
 
     console.log(selection.anchorOffset)
-    insertSpan(selection, selectedText)
+    console.log(selection.focusOffset)
+    if (selection.focusOffset - selection.anchorOffset != 0) {
+        insertSpan(selection, selectedText)
+    }
 }
 
 function insertSpan(selection, selectedText) {
