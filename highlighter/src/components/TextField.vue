@@ -90,14 +90,19 @@ function divideHighlight(range, innerRange, mode, color) {
     console.log(nextRange.toString())
 }
 
-function exportHighlighted() {
+function exportHighlighted(pickerModeArray) {
     const whole = document.getElementById("whole")
-
     const text = whole.innerHTML
-    
+
+    var output = {
+        colorInfo: pickerModeArray,
+        text: text
+    }
+
     const filename = "highlighted"
     const element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(output)));
     element.setAttribute('download', filename);
     document.body.appendChild(element)
     element.click();

@@ -43,13 +43,15 @@ function importText(e) {
       textField.value.textKey++
     }
   }
-  reader.readAsText(file)
-  isXslxLoaded = true
-  mainKey.value++
+  if (file != undefined) {
+    reader.readAsText(file)
+    isXslxLoaded = true
+    mainKey.value++
+  }
 }
 
 function exportAll() {
-  textField.value.exportHighlighted()
+  textField.value.exportHighlighted(pickerModeArray)
 }
 
 function changeMode(mode)  {
